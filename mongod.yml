@@ -1,0 +1,6 @@
+storage:
+  dbPath: /Users/nagashimadaichi/Desktop/fastapi_db/odmantic_fastapi/app/db/mongodb
+systemLog:
+  destination: file
+  path: /Users/nagashimadaichi/Desktop/fastapi_db/odmantic_fastapi/app/db/mongodb/mongod.log
+  logAppend: true
