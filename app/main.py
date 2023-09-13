@@ -18,7 +18,7 @@ from elasticsearch_dsl import Document, Date, Float, Keyword, Text, connections,
 # Elasticsearch-DSLとのデフォルトの接続を定義
 connections.create_connection(hosts=['https://localhost:9200'], 
                               verify_certs=False, 
-                              http_auth=('elastic', 'y1X5ohccHph+6XpdRsaB'),
+                              http_auth=('elastic', 's3+yOAkxJC4tfPSU6+JP'),
                               )
 
 class ItemDocument(Document):

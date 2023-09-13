@@ -1,12 +1,22 @@
 ## api_item.py
+
 """
 odmanic, elasticsearch-dsl, elasticsearch-pyの3つのライブラリを使って
 DB操作の比較を行っています
 
 [endpoints]
-- mongo: odmantic
 - es: elasticsearch-dsl
+- async-lock-es: elasticsearch-dsl + async-lock
+- mongo: odmantic
 - es-py: elasticsearch-py
+
+- GET("/es"): Elasticsearchから1000件取得
+- GET("/es/{item_id}"): Elasticsearchから1件取得
+- POST("/es"): Elasticsearchに1件保存
+それぞれ４×3=12のエンドポイントを用意しています
+
+"async-lock-es"はパスオペレーション関数をasyncで定義しているにも関わらず
+内部（DB操作）は同期処理になっているので、lockがかかっている状態です
 """
 
 from fastapi import APIRouter, HTTPException, Depends
@@ -23,11 +33,11 @@ from time import sleep
 
 router = APIRouter()
 
-sleep_time = 0.3
+sleep_time = 0.05
 
 es = AsyncElasticsearch(hosts=['https://localhost:9200'], 
                               verify_certs=False, 
-                              http_auth=('elastic', 'y1X5ohccHph+6XpdRsaB'))
+                              http_auth=('elastic', 's3+yOAkxJC4tfPSU6+JP'))
 
 @router.get("/")
 async def read_items():
@@ -36,11 +46,28 @@ async def read_items():
 
 @router.get("/es")
 def get_items():
+    sleep(sleep_time)
     items = ItemDocument.search().extra(size=1000).execute()
     return items.to_dict()
 
 @router.get("/es/{item_id}")
 def get_single_item(item_id: str):
+    sleep(sleep_time)
+    item = ItemDocument.get(id=item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    else:
+        return item.to_dict()
+
+
+@router.get("/async-lock-es")
+async def get_items():
+    sleep(sleep_time)
+    items = ItemDocument.search().extra(size=1000).execute()
+    return items.to_dict()
+
+@router.get("/async-lock-es/{item_id}")
+async def get_single_item(item_id: str):
     sleep(sleep_time)
     item = ItemDocument.get(id=item_id)
     if not item:
@@ -57,7 +84,7 @@ async def get_items(engine: AIOEngine = Depends(get_engine)):
 
 @router.get("/mongo/{item_id}", response_model=Item_schemas.Item)
 async def get_single_item(item_id: ObjectId, engine: AIOEngine = Depends(get_engine)):
-    await asyncio.sleep(0.3)
+    await asyncio.sleep(sleep_time)
     item = await engine.find_one(Item_models.Item, Item_models.Item.id == item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -93,7 +120,6 @@ async def create_item(item: Item_schemas.ItemCreate, engine: AIOEngine = Depends
 
     return item
 
-
 @router.post("/es", response_model=Item_schemas.Item)
 def create_item(item: Item_schemas.ItemCreate):
     sleep(sleep_time)
@@ -105,6 +131,16 @@ def create_item(item: Item_schemas.ItemCreate):
 
     return item_doc.to_dict()
 
+@router.post("/async-lock-es", response_model=Item_schemas.Item)
+async def create_item(item: Item_schemas.ItemCreate):
+    sleep(sleep_time)
+    item_doc = ItemDocument(**item.dict())
+    item_doc.save()  # Elasticsearchに保存
+
+    if not item_doc:
+        raise HTTPException(status_code=400, detail="Item not saved")
+
+    return item_doc.to_dict()
 
 @router.post("/es-py", response_model=Item_schemas.Item)
 async def create_item(item: Item_schemas.ItemCreate):

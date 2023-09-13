@@ -39,7 +39,7 @@ from elasticsearch import AsyncElasticsearch
 
 es = AsyncElasticsearch(hosts=['https://localhost:9200'], 
                               verify_certs=False, 
-                              http_auth=('elastic', 'y1X5ohccHph+6XpdRsaB'))
+                              http_auth=('elastic', 's3+yOAkxJC4tfPSU6+JP'))
 
 mapping = {
     "mappings": {
