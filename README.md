@@ -11,6 +11,8 @@
 FastAPIのDocumentや周辺レポジトリを参考に、レポジトリ構造やPydanticによるschmea/Model定義を行っています。
 大きいアプリの場合にはルーティングが必須で、そういった構造の分け方についても公式やその辺りに準拠しています。
 
+またpythonのversionやライブラリRyeを使っています
+個人の環境ではLinterとしてruffを使っています
 
 ## API
 メインはAPIディレクトリ(app/api/v1)です
