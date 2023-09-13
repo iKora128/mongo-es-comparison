@@ -4,6 +4,7 @@
 from fastapi import FastAPI
 from app.api.v1 import user, item
 from odmantic import AIOEngine, Model, Field
+from app.models import item as Item_models
 
 app = FastAPI()
 
@@ -13,7 +14,8 @@ engine = AIOEngine()
 from datetime import datetime
 from elasticsearch_dsl import Document, Date, Float, Keyword, Text, connections, Index
 
-# Elasticsearchとのデフォルトの接続を定義
+
+# Elasticsearch-DSLとのデフォルトの接続を定義
 connections.create_connection(hosts=['https://localhost:9200'], 
                               verify_certs=False, 
                               http_auth=('elastic', 'y1X5ohccHph+6XpdRsaB'),
@@ -44,6 +46,12 @@ def create_index():
 
 # アプリケーションの起動時に呼び出す
 create_index()
+
+
+# Elasticsearch-pyのIndexが存在しない場合に作成
+@app.on_event("startup")
+async def startup_event():
+    await Item_models.init_item_index()
 
 @app.get("/")
 async def root():
