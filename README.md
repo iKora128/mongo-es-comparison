@@ -18,12 +18,15 @@ FastAPIのDocumentや周辺レポジトリを参考に、レポジトリ構造�
 odmanic, elasticsearch-dsl, elasticsearch-pyの3つのライブラリを使って
 DB操作の比較を行っています
 
+
+### endpoints
 [endpoints]
 - es: elasticsearch-dsl
 - async-lock-es: elasticsearch-dsl + async-lock
 - mongo: odmantic
 - es-py: elasticsearch-py
 
+[method]
 - GET("/es"): Elasticsearchから1000件取得
 - GET("/es/{item_id}"): Elasticsearchから1件取得
 - POST("/es"): Elasticsearchに1件保存
@@ -31,3 +34,22 @@ DB操作の比較を行っています
 
 "async-lock-es"はパスオペレーション関数をasyncで定義しているにも関わらず
 内部（DB操作）は同期処理になっているので、lockがかかっている状態です
+
+### 比較内容
+mongoとelasticsearch-pyは非同期処理に対応しており、DBの素性をみてる
+esはdefでパスオペレーション関数を定義して、async-lock-esはasyncでパスオペレーション関数を定義
+すなわち、Async対応していないライブラリなのにAsyncを使うとlockがかかるのでは？ということ
+
+esとes-pyは単純にFastAPIの外部スレッドプールで実行しているか非同期処理なのかの比較
+
+## 結果
+DBの速度については
+MongoDB > Elasticsearchだが大きくは違わない
+(Writeで５倍程度、Readはシャーディングなどの最適化に依存)
+
+上記endpoints/ドライバの結果については
+elasticsearch-py ≒ mongo >> es >>>>>> async-lock-es
+
+GETの秒間リクエストについては
+
+(測定環境：MacStduio M1 Max 8コアCPU)
