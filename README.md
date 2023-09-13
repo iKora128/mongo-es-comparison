@@ -50,8 +50,10 @@ MongoDB > Elasticsearchだが大きくは違わない
 (Writeで５倍程度、Readはシャーディングなどの最適化に依存)
 
 上記endpoints/ドライバの結果については
+
 elasticsearch-py ≒ mongo >> es >>>>>> async-lock-es
 
-GETの秒間リクエストについては
+IDを指定した単独アイテムの秒間GETリクエストについては 
 
+2000 ≒ 2000 >> 150 >> 20
 (測定環境：MacStduio M1 Max 8コアCPU)
